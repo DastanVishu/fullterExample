@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class BaseApi {
-  final String _baseUrl = 'https://yourapi.com'; // Replace with your actual base URL.
+  final String _baseUrl = 'http://localhost:5000'; // Replace with your actual base URL.
   late final Dio _dio;
   final _secureStorage = const FlutterSecureStorage(); // Secure storage instance
 

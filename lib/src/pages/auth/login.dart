@@ -1,10 +1,59 @@
 // ignore_for_file: use_super_parameters, prefer_const_constructors
-
+// import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../../api/auth_api.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+
+}
+class _LoginPageState extends State<LoginPage> {
+
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final AuthApi _authApi = AuthApi();
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  bool _isLoading = false;
+
+  // Handle Login Action
+  _login() async {
+    setState((){
+      _isLoading = true;
+    });
+
+    final email = _emailController.text;
+    final password = _passwordController.text;
+
+    if(email.isEmpty || password.isEmpty) {
+      Fluttertoast.showToast(msg: "Please enter email and password");
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    // Call the login API
+
+    
+    try {
+      final response = await _authApi.login({email:email, password:password});
+      if(response.success){
+        await _secureStorage.write(key: 'token', value: response['token']);
+        Fluttertoast.showToast(msg: response.message);
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        throw(response.message);
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: e.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +88,7 @@ class LoginPage extends StatelessWidget {
 
                 // Email Input Field
                 TextField(
+                  controller: _emailController,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Color.fromARGB(255, 255, 255, 255),
@@ -55,6 +105,7 @@ class LoginPage extends StatelessWidget {
                 // Password Input Field
                 TextField(
                   obscureText: true,
+                  controller: _passwordController,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Color.fromARGB(255, 255, 255, 255),
@@ -69,11 +120,10 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // Login Button
-                ElevatedButton(
-                  onPressed: () {
-                    // Handle login action
-                    context.go('/home');
-                  },
+                _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                  onPressed: _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF558B2F), // Deep Green
                     shape: RoundedRectangleBorder(
