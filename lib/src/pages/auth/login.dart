@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../api/auth_api.dart';
-
+import 'dart:developer';
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -42,15 +42,27 @@ class _LoginPageState extends State<LoginPage> {
 
     
     try {
-      final response = await _authApi.login({email:email, password:password});
-      if(response.success){
+      final response = await _authApi.login({"email":email, "password":password});
+      log('======================= $response');
+      if(response['success']){
+        log('======================= $response');
         await _secureStorage.write(key: 'token', value: response['token']);
-        Fluttertoast.showToast(msg: response.message);
-        Navigator.pushReplacementNamed(context, '/home');
+        Fluttertoast.showToast(msg: response['message']);
+          setState(() {
+            _isLoading = false;
+          });
+        context.go('/home');
       } else {
-        throw(response.message);
+        setState(() {
+          _isLoading = false;
+        });
+        Fluttertoast.showToast(msg: response.message);
       }
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      log('=============eee========== $e');
       Fluttertoast.showToast(msg: e.toString());
     }
   }

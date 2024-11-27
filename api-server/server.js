@@ -43,7 +43,9 @@ app.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
+
     const user = await User.findOne({ email, password });
+    console.log(req.body, "===============", user);
     if (user) {
       res.json({ success: true, message: 'Login successful', user, token: "this is fake toke" });
     } else {
